@@ -1,0 +1,41 @@
+{
+  "name": "pb_cli",
+  "version": "1.0.0",
+  "description": "PocketBase admin CLI tool",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "pb_cli": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node --esm src/index.ts",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "pocketbase",
+    "cli",
+    "admin",
+    "database"
+  ],
+  "author": "Abdramane Sakone",
+  "license": "MIT",
+  "dependencies": {
+    "pocketbase": "^0.20.1",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
