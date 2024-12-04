@@ -1,5 +1,5 @@
 {
-  "name": "pb_cli",
+  "name": "@enokas/pb_cli",
   "version": "1.0.0",
   "description": "PocketBase admin CLI tool",
   "type": "module",

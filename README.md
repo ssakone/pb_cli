@@ -1,4 +1,4 @@
-# pb_cli
+# @enokas/pb_cli
 
 A command-line interface tool for managing PocketBase collections and profiles.
 
@@ -6,13 +6,13 @@ A command-line interface tool for managing PocketBase collections and profiles.
 
 ```bash
 # Using npm
-npm install -g pb_cli
+npm install -g @enokas/pb_cli
 
 # Using pnpm
-pnpm add -g pb_cli
+pnpm add -g @enokas/pb_cli
 
 # Using yarn
-yarn global add pb_cli
+yarn global add @enokas/pb_cli
 ```
 
 ## Usage
