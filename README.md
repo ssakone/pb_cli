@@ -29,6 +29,9 @@ pb_cli modify update users -f "active = false" -d '{"active": true}'
 
 # Delete records
 pb_cli modify delete logs -f "created < '2023-01-01'" --dry-run
+
+# Create a new record
+pb_cli create users -d '{"name": "John Doe", "email": "john@example.com"}'
 ```
 
 ## Features
@@ -36,6 +39,7 @@ pb_cli modify delete logs -f "created < '2023-01-01'" --dry-run
 - Profile Management: Create and manage multiple PocketBase profiles
 - List Records: Query and display records from any collection
 - Modify Records: Update or delete records in bulk with filters
+- Create Records: Add new records to any collection
 - Dry Run: Preview changes before applying them
 - Interactive: Confirmation prompts for destructive operations
 
@@ -64,6 +68,10 @@ pb_cli modify delete logs -f "created < '2023-01-01'" --dry-run
 - `modify delete <collection> [options]`: Delete records
   - `-f, --filter <filter>`: Filter expression
   - `--dry-run`: Preview deletions without applying them
+
+### Create Records
+- `create <collection> [options]`: Create a new record
+  - `-d, --data <json>`: JSON data for the new record
 
 ## License
 
