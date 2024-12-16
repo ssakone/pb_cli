@@ -130,3 +130,19 @@ export async function deleteRecords(
     process.exit(1);
   }
 }
+
+export async function createRecord(
+  collection: string,
+  recordData: Record<string, any>
+): Promise<void> {
+  try {
+    initPocketBase();
+    await ensureAuthenticated();
+
+    const record = await pb.collection(collection).create(recordData);
+    console.log("Record created successfully:", record);
+  } catch (error) {
+    console.error("Error creating record:", error);
+    process.exit(1);
+  }
+}

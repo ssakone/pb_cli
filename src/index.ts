@@ -6,6 +6,7 @@ import { createProfileCommands } from "./commands/profile.commands.js";
 import { createListCommand } from "./commands/list.commands.js";
 import { createModifyCommand } from "./commands/modify.commands.js";
 import { adminLogin, initPocketBase } from "./services/pb.service.js";
+import { createCreateCommand } from "./commands/create.commands.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ program
 program.addCommand(createProfileCommands());
 program.addCommand(createListCommand());
 program.addCommand(createModifyCommand());
+program.addCommand(createCreateCommand());
 
 // Add login command
 program
