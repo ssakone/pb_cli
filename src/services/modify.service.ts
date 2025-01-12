@@ -12,17 +12,6 @@ async function getFilteredRecords(collection: string, filter: string) {
   return records;
 }
 
-async function getUserConfirmation(message: string): Promise<boolean> {
-  console.log(message);
-  const response = await new Promise<string>((resolve) => {
-    process.stdin.once("data", (data) => {
-      resolve(data.toString().trim());
-    });
-  });
-  process.stdin.destroy();
-  return response.toLowerCase() === "yes";
-}
-
 export async function modifyRecords(
   collection: string,
   filter: string,
@@ -51,24 +40,18 @@ export async function modifyRecords(
       return;
     }
 
-    // Demander confirmation
-    const confirmed = await getUserConfirmation(
-      `\nAbout to update ${records.length} records. Type 'yes' to continue:`
-    );
-
-    if (!confirmed) {
-      console.log("Operation cancelled");
-      return;
-    }
-
     // Effectuer les modifications
+    const batchSize = 10;
     let updated = 0;
-    for (const record of records) {
-      await pb.collection(collection).update(record.id, updateData);
-      updated++;
-      if (updated % 10 === 0) {
-        console.log(`Updated ${updated}/${records.length} records...`);
-      }
+    for (let i = 0; i < records.length; i += batchSize) {
+      const batch = records.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map((record) =>
+          pb.collection(collection).update(record.id, updateData)
+        )
+      );
+      updated += batch.length;
+      console.log(`Updated ${updated}/${records.length} records...`);
     }
 
     console.log(`Successfully updated ${updated} records`);
@@ -104,24 +87,16 @@ export async function deleteRecords(
       return;
     }
 
-    // Demander confirmation
-    const confirmed = await getUserConfirmation(
-      `\nAbout to delete ${records.length} records. Type 'yes' to continue:`
-    );
-
-    if (!confirmed) {
-      console.log("Operation cancelled");
-      return;
-    }
-
     // Effectuer les suppressions
+    const batchSize = 10;
     let deleted = 0;
-    for (const record of records) {
-      await pb.collection(collection).delete(record.id);
-      deleted++;
-      if (deleted % 10 === 0) {
-        console.log(`Deleted ${deleted}/${records.length} records...`);
-      }
+    for (let i = 0; i < records.length; i += batchSize) {
+      const batch = records.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map((record) => pb.collection(collection).delete(record.id))
+      );
+      deleted += batch.length;
+      console.log(`Deleted ${deleted}/${records.length} records...`);
     }
 
     console.log(`Successfully deleted ${deleted} records`);
@@ -139,10 +114,22 @@ export async function createRecord(
     initPocketBase();
     await ensureAuthenticated();
 
-    const record = await pb.collection(collection).create(recordData);
-    console.log("Record created successfully:", record);
+    const batchSize = 10;
+    const records = Array.isArray(recordData) ? recordData : [recordData];
+    let created = 0;
+
+    for (let i = 0; i < records.length; i += batchSize) {
+      const batch = records.slice(i, i + batchSize);
+      await Promise.all(
+        batch.map((data) => pb.collection(collection).create(data))
+      );
+      created += batch.length;
+      console.log(`Created ${created}/${records.length} records...`);
+    }
+
+    console.log("Records created successfully");
   } catch (error) {
-    console.error("Error creating record:", error);
+    console.error("Error creating records:", error);
     process.exit(1);
   }
 }
