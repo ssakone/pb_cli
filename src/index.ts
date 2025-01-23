@@ -21,7 +21,7 @@ const program = new Command();
 program
   .name("pb_cli")
   .description("CLI tool for managing PocketBase collections and profiles")
-  .version("1.1.1");
+  .version("1.1.2");
 
 // Add commands
 program.addCommand(createProfileCommands());
