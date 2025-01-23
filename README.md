@@ -41,7 +41,6 @@ pb_cli create users -d '{"name": "John Doe", "email": "john@example.com"}'
 - Modify Records: Update or delete records in bulk with filters
 - Create Records: Add new records to any collection
 - Dry Run: Preview changes before applying them
-- Interactive: Confirmation prompts for destructive operations
 
 ## Commands
 
