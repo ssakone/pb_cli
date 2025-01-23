@@ -50,7 +50,6 @@ export async function autoLogin(): Promise<void> {
 export async function adminLogin(): Promise<void> {
   try {
     const profile = getActiveProfile();
-    console.log(profile);
     if (!profile) {
       throw new Error("No active profile");
     }
@@ -87,8 +86,15 @@ export async function collectionLogin(
 export async function ensureAuthenticated(): Promise<void> {
   const token = loadToken();
   if (token) {
+    // Load the token into the auth store
     pb.authStore.save(token, null);
-    return;
+
+    // Check if the token is still valid
+    if (pb.authStore.isValid) {
+      return;
+    } else {
+      console.log("Stored token is invalid or expired. Re-authenticating...");
+    }
   }
   await autoLogin();
 }

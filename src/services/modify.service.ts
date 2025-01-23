@@ -1,6 +1,8 @@
 import { initPocketBase, ensureAuthenticated, pb } from "./pb.service.js";
 import PocketBase from "pocketbase";
 
+const BATCH_SIZE = 10;
+
 async function getFilteredRecords(collection: string, filter: string) {
   initPocketBase();
   await ensureAuthenticated();
@@ -20,7 +22,6 @@ export async function modifyRecords(
 ): Promise<void> {
   try {
     const records = await getFilteredRecords(collection, filter);
-
     console.log(`Found ${records.length} records matching filter: ${filter}`);
 
     if (records.length === 0) {
@@ -28,7 +29,7 @@ export async function modifyRecords(
       return;
     }
 
-    // Afficher un exemple de modification
+    // Show an example of changes
     if (records.length > 0) {
       console.log("\nExample of changes:");
       console.log("Original record:", records[0]);
@@ -40,11 +41,10 @@ export async function modifyRecords(
       return;
     }
 
-    // Effectuer les modifications
-    const batchSize = 10;
+    // Perform the modifications in batches
     let updated = 0;
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map((record) =>
           pb.collection(collection).update(record.id, updateData)
@@ -68,7 +68,6 @@ export async function deleteRecords(
 ): Promise<void> {
   try {
     const records = await getFilteredRecords(collection, filter);
-
     console.log(`Found ${records.length} records matching filter: ${filter}`);
 
     if (records.length === 0) {
@@ -76,7 +75,7 @@ export async function deleteRecords(
       return;
     }
 
-    // Afficher un exemple de suppression
+    // Show an example of a record to be deleted
     if (records.length > 0) {
       console.log("\nExample of record to be deleted:");
       console.log(records[0]);
@@ -87,11 +86,10 @@ export async function deleteRecords(
       return;
     }
 
-    // Effectuer les suppressions
-    const batchSize = 10;
+    // Perform deletions in batches
     let deleted = 0;
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map((record) => pb.collection(collection).delete(record.id))
       );
@@ -114,12 +112,11 @@ export async function createRecord(
     initPocketBase();
     await ensureAuthenticated();
 
-    const batchSize = 10;
     const records = Array.isArray(recordData) ? recordData : [recordData];
     let created = 0;
 
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map((data) => pb.collection(collection).create(data))
       );

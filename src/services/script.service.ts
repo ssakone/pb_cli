@@ -2,6 +2,8 @@ import console from "console";
 import { initPocketBase, ensureAuthenticated, pb } from "./pb.service.js";
 import { RecordModel } from "pocketbase";
 
+const BATCH_SIZE = 10;
+
 async function getFilteredRecords(collection: string, filter: string) {
   initPocketBase();
   await ensureAuthenticated();
@@ -36,10 +38,9 @@ export async function scriptModifyRecords(
       return true;
     }
 
-    const batchSize = 10;
     let updated = 0;
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map((record: RecordModel) =>
           pb.collection(collection).update(record.id, updateData)
@@ -52,8 +53,6 @@ export async function scriptModifyRecords(
     return true;
   } catch (error) {
     console.log(`Error updating records in ${collection}:`, error);
-    // console.log(error?.message || "");
-    // throw error;
     return false;
   }
 }
@@ -80,10 +79,9 @@ export async function scriptDeleteRecords(
       return true;
     }
 
-    const batchSize = 10;
     let deleted = 0;
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map((record: RecordModel) =>
           pb.collection(collection).delete(record.id)
@@ -100,7 +98,6 @@ export async function scriptDeleteRecords(
       error.statusText
     );
     return false;
-    // throw error;
   }
 }
 
@@ -113,11 +110,10 @@ export async function scriptCreateRecord(
     await ensureAuthenticated();
 
     const records = Array.isArray(recordData) ? recordData : [recordData];
-    const batchSize = 10;
     let created = 0;
 
-    for (let i = 0; i < records.length; i += batchSize) {
-      const batch = records.slice(i, i + batchSize);
+    for (let i = 0; i < records.length; i += BATCH_SIZE) {
+      const batch = records.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map((data) => pb.collection(collection).create(data))
       );

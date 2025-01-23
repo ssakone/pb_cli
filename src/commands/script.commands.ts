@@ -112,7 +112,11 @@ async function executeCommand(command: ScriptCommand) {
 
         const data = await response.json();
         console.log("Response:", JSON.stringify(data, null, 2));
-        showStat(true);
+        if (!response.ok) {
+          return showStat(false);
+        } else {
+          showStat(true);
+        }
       } catch (error: any) {
         console.log(
           `Error sending ${sendCmd.method} request to ${fullUrl}:`,
