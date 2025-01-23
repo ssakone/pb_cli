@@ -1,49 +1,73 @@
 import { Command } from 'commander';
-import { getActiveProfile, loadToken } from '../utils.js';
+import { getActiveProfile } from '../utils.js';
 import fetch from 'node-fetch';
+import { initPocketBase, ensureAuthenticated, pb } from '../services/pb.service.js';
 
 export function createSendCommand(): Command {
-    return new Command('send')
-        .description('Send a custom request with method, custom header (including token), and custom data')
-        .argument('<method>', 'HTTP method (GET, POST, PUT, DELETE, etc.)')
-        .argument('<url>', 'Request URL')
+    const cmd = new Command('send')
+        .description('Send HTTP requests to PocketBase with authentication')
+        .argument('<method>', 'HTTP method (GET, POST, PUT, DELETE, PATCH)')
+        .argument('<url>', 'Request URL path (e.g., /api/collections)')
         .option('-h, --headers <headers>', 'Custom headers as JSON string', '{}')
-        .option('-d, --data <data>', 'Request data as JSON string', '{}')
-        .action(async (method: string, url: string, options: any) => {
-            try {
-                const profile = getActiveProfile();
-                if (!profile) {
-                    console.error("No active profile. Please add a profile first with: profile add <name> <url> <email> <password>");
-                    process.exit(1);
-                }
+        .option('-d, --data <data>', 'Request body as JSON string', '{}')
+        .addHelpText('after', `
+Examples:
+  $ pb_cli send GET /api/health                    # Check API health
+  $ pb_cli send GET /api/collections               # List all collections
+  $ pb_cli send POST /api/collections -d '{"name": "posts"}'  # Create collection
+  $ pb_cli send GET /api/collections/posts/records # List records
+  $ pb_cli send DELETE /api/collections/posts      # Delete collection
 
-                const token = loadToken();
-                if (!token) {
-                    console.error("No token found. Please login first.");
-                    process.exit(1);
-                }
+Arguments:
+  method   HTTP method (required)
+  url      Request URL path (required)
 
-                const headers = JSON.parse(options.headers);
-                headers['Authorization'] = `Bearer ${token}`;
+Options:
+  -h, --headers <json>  Additional headers as JSON string
+  -d, --data <json>    Request body as JSON string
+        `)
+        .showHelpAfterError('Add --help for additional information');
 
-                const data = JSON.parse(options.data);
-
-                const response = await fetch(url, {
-                    method,
-                    headers,
-                    body: method !== 'GET' ? JSON.stringify(data) : undefined
-                });
-
-                const responseBody = await response.text();
-                console.log(`Response: ${response.status} ${response.statusText}`);
-                console.log(responseBody);
-            } catch (error) {
-                if (error instanceof SyntaxError) {
-                    console.error("Invalid JSON format. Please provide a valid JSON string.");
-                } else {
-                    console.error("Error sending request:", error);
-                }
+    cmd.action(async (method?: string, url?: string, options?: any) => {
+        if (!method || !url) {
+            cmd.help();
+            return;
+        }
+        try {
+            const profile = getActiveProfile();
+            if (!profile) {
+                console.error("No active profile. Please add a profile first with: profile add <name> <url> <email> <password>");
                 process.exit(1);
             }
-        });
+
+            // Initialize PB and ensure we're authenticated
+            initPocketBase();
+            await ensureAuthenticated();
+
+            const headers = JSON.parse(options.headers);
+            headers['Authorization'] = pb.authStore.token;
+
+            const fullUrl = url.startsWith('http') ? url : `${profile.url}${url}`;
+            const data = JSON.parse(options.data);
+
+            const response = await fetch(fullUrl, {
+                method,
+                headers,
+                body: method !== 'GET' ? JSON.stringify(data) : undefined
+            });
+
+            const responseBody = await response.text();
+            console.log(`Response: ${response.status} ${response.statusText}`);
+            console.log(responseBody);
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                console.error("Invalid JSON format. Please provide a valid JSON string.");
+            } else {
+                console.error("Error sending request:", error);
+            }
+            process.exit(1);
+        }
+    });
+
+    return cmd;
 }
