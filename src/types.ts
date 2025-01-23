@@ -21,3 +21,39 @@ export interface ProfilesConfig {
     activeProfile?: string;
     profiles: Record<string, Profile>;
 }
+
+export interface ScriptCommand {
+    create?: CreateCommand[];
+    list?: ListCommand[];
+    modify?: ModifyCommand[];
+    send?: SendCommand[];
+}
+
+export interface CreateCommand {
+    collection: string;
+    data: Record<string, any>;
+}
+
+export interface ListCommand {
+    collection: string;
+    options?: ListOptions;
+}
+
+export interface ModifyCommand {
+    type: 'update' | 'delete';
+    collection: string;
+    filter?: string;
+    data?: Record<string, any>;
+    dryRun?: boolean;
+}
+
+export interface SendCommand {
+    method: string;
+    url: string;
+    headers?: Record<string, string>;
+    data?: Record<string, any>;
+}
+
+export interface Script {
+    run: ScriptCommand[];
+}

@@ -8,6 +8,7 @@ import { createModifyCommand } from "./commands/modify.commands.js";
 import { adminLogin, autoLogin, initPocketBase } from "./services/pb.service.js";
 import { createCreateCommand } from "./commands/create.commands.js";
 import { createSendCommand } from "./commands/send.commands.js";
+import { registerScriptCommands } from "./commands/script.commands.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ program.addCommand(createListCommand());
 program.addCommand(createModifyCommand());
 program.addCommand(createCreateCommand());
 program.addCommand(createSendCommand());
+registerScriptCommands(program);
 
 // Add login command
 program

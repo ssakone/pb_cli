@@ -1,0 +1,65 @@
+{
+  "run": [
+    {
+      "list": [
+        {
+          "collection": "users",
+          "options": {
+            "filter": "created >= '2024-01-01'",
+            "sort": "-created",
+            "fields": ["id", "username", "email", "created"],
+            "page": 1,
+            "perPage": 20
+          }
+        }
+      ]
+    },
+    {
+      "modify": [
+        {
+          "type": "update",
+          "collection": "posts",
+          "filter": "published = false",
+          "data": {
+            "published": true,
+            "updatedAt": "2025-01-23 10:14:16"
+          },
+          "dryRun": true
+        }
+      ]
+    },
+    {
+      "send": [
+        {
+          "method": "GET",
+          "url": "/api/collections/users/records",
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/api/collections/notifications/records",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "data": {
+            "type": "new_post",
+            "message": "A new post has been published",
+            "userId": "RELATION_ID_PLACEHOLDER"
+          }
+        }
+      ]
+    },
+    {
+      "modify": [
+        {
+          "type": "delete",
+          "collection": "logs",
+          "filter": "created < '2024-01-01'",
+          "dryRun": true
+        }
+      ]
+    }
+  ]
+}

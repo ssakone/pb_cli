@@ -81,6 +81,49 @@ pb_cli send POST http://localhost:8090/api/endpoint -h '{"Content-Type": "applic
   - `-h, --headers <headers>`: Custom headers as JSON string
   - `-d, --data <data>`: Request data as JSON string
 
+### Script Execution
+- `script <path>`: Execute a JSON script containing multiple PocketBase operations
+  - The script file should be a JSON file with the following structure:
+  ```json
+  {
+    "run": [
+      {
+        "create": [
+          {
+            "collection": "users",
+            "data": { "name": "John Doe", "email": "john@example.com" }
+          }
+        ],
+        "list": [
+          {
+            "collection": "users",
+            "options": {
+              "filter": "created >= '2023-01-01'",
+              "sort": "-created"
+            }
+          }
+        ],
+        "modify": [
+          {
+            "type": "update",
+            "collection": "users",
+            "filter": "active = false",
+            "data": { "active": true }
+          }
+        ],
+        "send": [
+          {
+            "method": "POST",
+            "url": "http://localhost:8090/api/endpoint",
+            "headers": { "Content-Type": "application/json" },
+            "data": { "key": "value" }
+          }
+        ]
+      }
+    ]
+  }
+  ```
+
 ## License
 
 MIT
