@@ -1,4 +1,6 @@
+import console from "console";
 import { initPocketBase, ensureAuthenticated, pb } from "./pb.service.js";
+import { RecordModel } from "pocketbase";
 
 async function getFilteredRecords(collection: string, filter: string) {
   initPocketBase();
@@ -16,18 +18,22 @@ export async function scriptModifyRecords(
   filter: string,
   updateData: Record<string, any>,
   dryRun: boolean
-): Promise<void> {
+): Promise<boolean> {
   try {
     const records = await getFilteredRecords(collection, filter);
 
     if (records.length === 0) {
-      console.log(`No records found in ${collection} matching filter: ${filter}`);
-      return;
+      console.log(
+        `No records found in ${collection} matching filter: ${filter}`
+      );
+      return false;
     }
 
     if (dryRun) {
-      console.log(`[DRY RUN] Would update ${records.length} records in ${collection}`);
-      return;
+      console.log(
+        `[DRY RUN] Would update ${records.length} records in ${collection}`
+      );
+      return true;
     }
 
     const batchSize = 10;
@@ -35,7 +41,7 @@ export async function scriptModifyRecords(
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
       await Promise.all(
-        batch.map((record) =>
+        batch.map((record: RecordModel) =>
           pb.collection(collection).update(record.id, updateData)
         )
       );
@@ -43,9 +49,12 @@ export async function scriptModifyRecords(
     }
 
     console.log(`Updated ${updated} records in ${collection}`);
+    return true;
   } catch (error) {
-    console.error(`Error updating records in ${collection}:`, error);
-    throw error;
+    console.log(`Error updating records in ${collection}:`, error);
+    // console.log(error?.message || "");
+    // throw error;
+    return false;
   }
 }
 
@@ -53,18 +62,22 @@ export async function scriptDeleteRecords(
   collection: string,
   filter: string,
   dryRun: boolean
-): Promise<void> {
+): Promise<boolean> {
   try {
     const records = await getFilteredRecords(collection, filter);
 
     if (records.length === 0) {
-      console.log(`No records found in ${collection} matching filter: ${filter}`);
-      return;
+      console.log(
+        `No records found in ${collection} matching filter: ${filter}`
+      );
+      return true;
     }
 
     if (dryRun) {
-      console.log(`[DRY RUN] Would delete ${records.length} records from ${collection}`);
-      return;
+      console.log(
+        `[DRY RUN] Would delete ${records.length} records from ${collection}`
+      );
+      return true;
     }
 
     const batchSize = 10;
@@ -72,22 +85,29 @@ export async function scriptDeleteRecords(
     for (let i = 0; i < records.length; i += batchSize) {
       const batch = records.slice(i, i + batchSize);
       await Promise.all(
-        batch.map((record) => pb.collection(collection).delete(record.id))
+        batch.map((record: RecordModel) =>
+          pb.collection(collection).delete(record.id)
+        )
       );
       deleted += batch.length;
     }
 
     console.log(`Deleted ${deleted} records from ${collection}`);
-  } catch (error) {
-    console.error(`Error deleting records from ${collection}:`, error);
-    throw error;
+    return true;
+  } catch (error: any) {
+    console.error(
+      `Error deleting records from ${collection}:`,
+      error.statusText
+    );
+    return false;
+    // throw error;
   }
 }
 
 export async function scriptCreateRecord(
   collection: string,
   recordData: Record<string, any>
-): Promise<void> {
+): Promise<boolean> {
   try {
     initPocketBase();
     await ensureAuthenticated();
@@ -105,8 +125,9 @@ export async function scriptCreateRecord(
     }
 
     console.log(`Created ${created} records in ${collection}`);
-  } catch (error) {
-    console.error(`Error creating records in ${collection}:`, error);
-    throw error;
+    return true;
+  } catch (error: any) {
+    console.error(`Error creating records in ${collection}:`, error.statusText);
+    return false;
   }
 }
