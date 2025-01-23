@@ -13,10 +13,7 @@ dotenv.config();
 
 const program = new Command();
 
-program
-  .name("pb_cli")
-  .description("CLI tool for managing PocketBase collections and profiles")
-  .version("1.0.0");
+program.name("pb_cli").description("CLI tool for managing PocketBase collections and profiles").version("1.1.0");
 
 // Add commands
 program.addCommand(createProfileCommands());
