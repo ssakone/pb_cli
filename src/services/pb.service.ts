@@ -2,6 +2,16 @@ import PocketBase from "pocketbase";
 import { getActiveProfile, saveToken, loadToken } from "../utils.js";
 import { ListOptions } from "../types.js";
 
+export interface Profile {
+    name: string;
+    url: string;
+    adminEmail: string;
+    adminPassword: string;
+    token?: string;
+    authType: 'admin' | 'collection';  // Add auth type
+    collectionName?: string;  // Add optional collection name for collection auth
+}
+
 export let pb: PocketBase;
 
 export function initPocketBase() {
@@ -13,9 +23,28 @@ export function initPocketBase() {
     pb = new PocketBase(profile.url);
 }
 
+export async function autoLogin(): Promise<void> {
+    const profile = getActiveProfile();
+    if (!profile) {
+        throw new Error("No active profile");
+    }
+
+    try {
+        if (profile.authType === 'admin') {
+            await adminLogin();
+        } else {
+            await collectionLogin(profile.adminEmail, profile.adminPassword, profile.collectionName!);
+        }
+    } catch (error) {
+        console.error("Failed to login:", error);
+        process.exit(1);
+    }
+}
+
 export async function adminLogin(): Promise<void> {
     try {
         const profile = getActiveProfile();
+        console.log(profile)
         if (!profile) {
             throw new Error("No active profile");
         }
@@ -27,7 +56,22 @@ export async function adminLogin(): Promise<void> {
         saveToken(pb.authStore.token);
         console.log("Successfully logged in as admin");
     } catch (error) {
-        console.error("Failed to login:", error);
+        console.error("Failed to login as admin:", error);
+        process.exit(1);
+    }
+}
+
+export async function collectionLogin(
+    email: string, 
+    password: string, 
+    collection: string
+): Promise<void> {
+    try {
+        const authData = await pb.collection(collection).authWithPassword(email, password);
+        saveToken(pb.authStore.token);
+        console.log(`Successfully logged in to collection ${collection}`);
+    } catch (error) {
+        console.error(`Failed to login to collection ${collection}:`, error);
         process.exit(1);
     }
 }
@@ -36,15 +80,9 @@ export async function ensureAuthenticated(): Promise<void> {
     const token = loadToken();
     if (token) {
         pb.authStore.save(token, null);
-        try {
-            // Verify if the token is still valid
-            await pb.admins.authRefresh();
-            return;
-        } catch (error) {
-            console.log("Token expired, logging in again...");
-        }
+        return
     }
-    await adminLogin();
+    await autoLogin();
 }
 
 export async function listCollection(collection: string, options: ListOptions = {}): Promise<void> {

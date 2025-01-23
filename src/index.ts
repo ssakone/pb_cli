@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import { createProfileCommands } from "./commands/profile.commands.js";
 import { createListCommand } from "./commands/list.commands.js";
 import { createModifyCommand } from "./commands/modify.commands.js";
-import { adminLogin, initPocketBase } from "./services/pb.service.js";
+import { adminLogin, autoLogin, initPocketBase } from "./services/pb.service.js";
 import { createCreateCommand } from "./commands/create.commands.js";
 import { createSendCommand } from "./commands/send.commands.js";
 
@@ -31,7 +31,7 @@ program
   .description("Login as admin")
   .action(() => {
     initPocketBase();
-    adminLogin();
+    autoLogin();
   });
 
 program.parse();
