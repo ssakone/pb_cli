@@ -32,6 +32,9 @@ pb_cli modify delete logs -f "created < '2023-01-01'" --dry-run
 
 # Create a new record
 pb_cli create users -d '{"name": "John Doe", "email": "john@example.com"}'
+
+# Send a custom request
+pb_cli send POST http://localhost:8090/api/endpoint -h '{"Content-Type": "application/json"}' -d '{"key": "value"}'
 ```
 
 ## Features
@@ -40,6 +43,7 @@ pb_cli create users -d '{"name": "John Doe", "email": "john@example.com"}'
 - List Records: Query and display records from any collection
 - Modify Records: Update or delete records in bulk with filters
 - Create Records: Add new records to any collection
+- Send Custom Requests: Make custom requests with method, custom header (including token), and custom data
 - Dry Run: Preview changes before applying them
 
 ## Commands
@@ -71,6 +75,11 @@ pb_cli create users -d '{"name": "John Doe", "email": "john@example.com"}'
 ### Create Records
 - `create <collection> [options]`: Create a new record
   - `-d, --data <json>`: JSON data for the new record
+
+### Send Custom Requests
+- `send <method> <url> [options]`: Send a custom request
+  - `-h, --headers <headers>`: Custom headers as JSON string
+  - `-d, --data <data>`: Request data as JSON string
 
 ## License
 
