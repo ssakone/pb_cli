@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { modifyRecords, deleteRecords } from "../services/modify.service.js";
+import { ensureAuthenticated } from "../services/pb.service.js";
 
 export function createModifyCommand(): Command {
     const modifyCommand = new Command("modify")
@@ -13,6 +14,7 @@ export function createModifyCommand(): Command {
         .option("--dry-run", "Show what would be updated without making changes", false)
         .action(async (collection: string, options: any) => {
             try {
+                await ensureAuthenticated();
                 const updateData = JSON.parse(options.data);
                 await modifyRecords(collection, options.filter, updateData, options.dryRun);
             } catch (error) {
@@ -32,6 +34,7 @@ export function createModifyCommand(): Command {
         .option("--dry-run", "Show what would be deleted without making changes", false)
         .action(async (collection: string, options: any) => {
             try {
+                await ensureAuthenticated();
                 await deleteRecords(collection, options.filter, options.dryRun);
             } catch (error) {
                 console.error("Error deleting records:", error);

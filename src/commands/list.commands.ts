@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { ListOptions } from '../types.js';
 import { listCollection } from '../services/pb.service.js';
+import { ensureAuthenticated } from '../services/pb.service.js';
 
 export function createListCommand(): Command {
     return new Command('list')
@@ -12,7 +13,8 @@ export function createListCommand(): Command {
         .option('-e, --expand <expand>', 'Expand relations')
         .option('-p, --page <page>', 'Page number', '1')
         .option('-n, --per-page <perPage>', 'Items per page', '50')
-        .action((collection, options) => {
+        .action(async (collection, options) => {
+            await ensureAuthenticated();
             const listOptions: ListOptions = {
                 fields: options.fields,
                 filter: options.filter,

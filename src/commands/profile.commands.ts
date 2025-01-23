@@ -13,9 +13,14 @@ export function createProfileCommands(): Command {
                 .argument('<url>', 'PocketBase URL')
                 .argument('<email>', 'Admin email')
                 .argument('<password>', 'Admin password')
-                .action((name, url, email, password) => {
+                .option('--auth-type <type>', 'Authentication type (admin or collection)', 'admin')
+                .option('--collection <name>', 'Collection name (required for collection auth)')
+                .action((name, url, email, password, options) => {
                     try {
-                        addProfile(name, url, email, password);
+                        if (options.authType === 'collection' && !options.collection) {
+                            throw new Error('Collection name is required for collection auth');
+                        }
+                        addProfile(name, url, email, password, options.authType, options.collection);
                         console.log(`Profile ${name} added successfully`);
                     } catch (error) {
                         console.error('Failed to add profile:', error);
@@ -68,3 +73,4 @@ export function createProfileCommands(): Command {
 
     return profileCommand;
 }
+

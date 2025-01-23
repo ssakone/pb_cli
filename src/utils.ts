@@ -30,12 +30,26 @@ function saveProfiles(config: ProfilesConfig) {
     fs.writeFileSync(PROFILES_FILE, JSON.stringify(config, null, 2));
 }
 
-export function addProfile(name: string, url: string, adminEmail: string, adminPassword: string) {
+export function addProfile(
+    name: string, 
+    url: string, 
+    adminEmail: string, 
+    adminPassword: string,
+    authType: 'admin' | 'collection' = 'admin',
+    collectionName?: string
+) {
     const config = loadProfiles();
     if (config.profiles[name]) {
         throw new Error(`Profile ${name} already exists`);
     }
-    config.profiles[name] = { name, url, adminEmail, adminPassword };
+    config.profiles[name] = { 
+        name, 
+        url, 
+        adminEmail, 
+        adminPassword, 
+        authType,
+        collectionName 
+    };
     if (!config.activeProfile) {
         config.activeProfile = name;
     }

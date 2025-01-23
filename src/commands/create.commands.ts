@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { createRecord } from '../services/modify.service.js';
+import { ensureAuthenticated } from '../services/pb.service.js';
 
 export function createCreateCommand(): Command {
     return new Command('create')
@@ -8,6 +9,7 @@ export function createCreateCommand(): Command {
         .requiredOption('-d, --data <json>', 'JSON string of data for the new record')
         .action(async (collection: string, options: any) => {
             try {
+                await ensureAuthenticated();
                 const recordData = JSON.parse(options.data);
                 await createRecord(collection, recordData);
                 console.log(`Record created successfully in collection ${collection}`);

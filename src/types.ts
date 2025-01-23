@@ -13,6 +13,8 @@ export interface Profile {
     adminEmail: string;
     adminPassword: string;
     token?: string;
+    authType: 'admin' | 'collection';  // Add auth type
+    collectionName?: string;  // Add optional collection name for collection auth
 }
 
 export interface ProfilesConfig {
