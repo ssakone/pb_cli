@@ -17,12 +17,10 @@ export let pb: PocketBase;
 export function initPocketBase() {
   const profile = getActiveProfile();
   if (!profile) {
-    console.error(
-      "No active profile. Please add a profile first with: profile add <name> <url> <email> <password>"
-    );
+    console.error("No active profile. Please add a profile first with: profile add <name> <url> <email> <password>");
     process.exit(1);
   }
-  pb = new PocketBase(profile.url);
+  if (!pb) pb = new PocketBase(profile.url);
 }
 
 export async function autoLogin(): Promise<void> {
@@ -35,11 +33,7 @@ export async function autoLogin(): Promise<void> {
     if (profile.authType === "admin") {
       await adminLogin();
     } else {
-      await collectionLogin(
-        profile.adminEmail,
-        profile.adminPassword,
-        profile.collectionName!
-      );
+      await collectionLogin(profile.adminEmail, profile.adminPassword, profile.collectionName!);
     }
   } catch (error) {
     console.error("Failed to login:", error);
@@ -54,10 +48,7 @@ export async function adminLogin(): Promise<void> {
       throw new Error("No active profile");
     }
 
-    const authData = await pb.admins.authWithPassword(
-      profile.adminEmail,
-      profile.adminPassword
-    );
+    const authData = await pb.admins.authWithPassword(profile.adminEmail, profile.adminPassword);
     saveToken(pb.authStore.token);
     console.log("Successfully logged in as admin");
   } catch (error) {
@@ -66,15 +57,9 @@ export async function adminLogin(): Promise<void> {
   }
 }
 
-export async function collectionLogin(
-  email: string,
-  password: string,
-  collection: string
-): Promise<void> {
+export async function collectionLogin(email: string, password: string, collection: string): Promise<void> {
   try {
-    const authData = await pb
-      .collection(collection)
-      .authWithPassword(email, password);
+    const authData = await pb.collection(collection).authWithPassword(email, password);
     saveToken(pb.authStore.token);
     console.log(`Successfully logged in to collection ${collection}`);
   } catch (error) {
@@ -84,6 +69,7 @@ export async function collectionLogin(
 }
 
 export async function ensureAuthenticated(): Promise<void> {
+  initPocketBase();
   const token = loadToken();
   if (token) {
     // Load the token into the auth store
@@ -99,22 +85,12 @@ export async function ensureAuthenticated(): Promise<void> {
   await autoLogin();
 }
 
-export async function listCollection(
-  collection: string,
-  options: ListOptions = {}
-): Promise<boolean> {
+export async function listCollection(collection: string, options: ListOptions = {}): Promise<boolean> {
   try {
     initPocketBase();
     await ensureAuthenticated();
 
-    const {
-      fields = [],
-      filter = "",
-      sort = "-created",
-      expand = "",
-      page = 1,
-      perPage = 50,
-    } = options;
+    const { fields = [], filter = "", sort = "-created", expand = "", page = 1, perPage = 50 } = options;
 
     const queryOptions: Record<string, any> = {
       sort,
@@ -132,9 +108,7 @@ export async function listCollection(
       queryOptions.expand = expand;
     }
 
-    const records = await pb
-      .collection(collection)
-      .getList(page, perPage, queryOptions);
+    const records = await pb.collection(collection).getList(page, perPage, queryOptions);
 
     console.log(`Collection ${collection}:`);
     console.log("Items:", records.items);
@@ -142,10 +116,7 @@ export async function listCollection(
     console.log(`Total items: ${records.totalItems}`);
     return true;
   } catch (error: any) {
-    console.error(
-      `Failed to fetch collection ${collection}:`,
-      error.statusText
-    );
+    console.error(`Failed to fetch collection ${collection}:`, error.statusText);
     process.exit(1);
     return false;
   }
